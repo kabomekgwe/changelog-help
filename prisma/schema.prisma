@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique
+  name      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  logs      UserLog[]
+  changes   ChangeLog[]
+}
+
+model UserLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ChangeLog {
+  id           Int      @id @default(autoincrement())
+  entityType   String   // The type of entity being changed (e.g., "User", "Product")
+  entityId     String   // The ID of the entity being changed
+  userId       Int      // The user who made the change
+  changeType   String   // CREATE, UPDATE, DELETE
+  oldValue     Json?    // Previous state (for updates and deletes)
+  newValue     Json?    // New state (for creates and updates)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+}
